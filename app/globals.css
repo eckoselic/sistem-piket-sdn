@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-jakarta: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+body {
+  background-color: #faf9f6;
+  color: #12243d;
+}
+
+/* Garis bawah tab aktif — satu momen animasi yang disengaja, bukan hover di semua tempat */
+.nav-active-indicator {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Fokus keyboard tetap terlihat jelas */
+:focus-visible {
+  outline: 2px solid #1e4c7c;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+table {
+  border-collapse: collapse;
+}
