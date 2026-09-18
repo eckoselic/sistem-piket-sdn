@@ -158,6 +158,7 @@ export default function PresensiPage() {
                 {new Date(presensiMap.get(userId!).jam_submit).toLocaleTimeString("id-ID", {
                   hour: "2-digit",
                   minute: "2-digit",
+                  timeZone: "Asia/Jakarta",
                 })}
                 .
               </p>

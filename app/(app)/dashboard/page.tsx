@@ -66,7 +66,7 @@ export default async function DashboardPage() {
                     <li key={j.id} className="flex items-center justify-between text-sm">
                       <span className="text-ink">{j.profiles?.nama}</span>
                       {hadir ? (
-                        <span className="text-xs font-medium text-ok bg-ok/10 px-2 py-1 rounded-full">Hadir · {new Date(hadir.jam_submit).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>
+                        <span className="text-xs font-medium text-ok bg-ok/10 px-2 py-1 rounded-full">Hadir · {new Date(hadir.jam_submit).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" })}</span>
                       ) : (
                         <span className="text-xs font-medium text-slate-soft bg-ink/5 px-2 py-1 rounded-full">Belum presensi</span>
                       )}
