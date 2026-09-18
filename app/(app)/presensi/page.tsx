@@ -44,7 +44,7 @@ export default function PresensiPage() {
     }
 
     const [{ data: jadwal }, { data: presensi }, { data: kode }] = await Promise.all([
-      supabase.from("jadwal_piket").select("id, guru_id, profiles(nama)").eq("tanggal", tanggal),
+      supabase.from("jadwal_piket").select("id, guru_id, profiles!guru_id(nama)").eq("tanggal", tanggal),
       supabase.from("presensi").select("*").eq("tanggal", tanggal),
       supabase.from("kode_harian").select("kode, berlaku_sampai").eq("tanggal", tanggal).maybeSingle(),
     ]);
@@ -68,10 +68,7 @@ export default function PresensiPage() {
     const berlakuSampai = new Date();
     berlakuSampai.setHours(15, 0, 0, 0);
 
-    const { error } = await supabase.from("kode_harian").upsert(
-      { tanggal, kode: kodeBaru, berlaku_sampai: berlakuSampai.toISOString() },
-      { onConflict: "tanggal" }
-    );
+    const { error } = await supabase.from("kode_harian").upsert({ tanggal, kode: kodeBaru, berlaku_sampai: berlakuSampai.toISOString() }, { onConflict: "tanggal" });
 
     setMemproses(false);
     if (error) {
@@ -135,10 +132,7 @@ export default function PresensiPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Presensi Guru Piket"
-        description="Kode presensi berlaku hari ini saja, ditampilkan di ruang guru pukul 06.00–15.00."
-      />
+      <PageHeader title="Presensi Guru Piket" description="Kode presensi berlaku hari ini saja, ditampilkan di ruang guru pukul 06.00–15.00." />
 
       <div className="p-6 md:p-10 space-y-6 max-w-3xl">
         {peran === "admin_tu" && (
@@ -146,15 +140,9 @@ export default function PresensiPage() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h2 className="font-semibold text-ink">Kode presensi hari ini</h2>
-                <p className="text-sm text-slate-soft mt-1">
-                  {kodeAktif ? `Aktif: ${kodeAktif.kode} (berlaku sampai jam 15.00)` : "Belum digenerate."}
-                </p>
+                <p className="text-sm text-slate-soft mt-1">{kodeAktif ? `Aktif: ${kodeAktif.kode} (berlaku sampai jam 15.00)` : "Belum digenerate."}</p>
               </div>
-              <button
-                onClick={handleGenerateKode}
-                disabled={memproses}
-                className="shrink-0 rounded-card bg-gold px-4 py-2 text-sm font-semibold text-ink hover:bg-gold/90 disabled:opacity-60"
-              >
+              <button onClick={handleGenerateKode} disabled={memproses} className="shrink-0 rounded-card bg-gold px-4 py-2 text-sm font-semibold text-ink hover:bg-gold/90 disabled:opacity-60">
                 {kodeAktif ? "Buat ulang kode" : "Generate kode"}
               </button>
             </div>
@@ -182,11 +170,7 @@ export default function PresensiPage() {
                   placeholder="Masukkan kode 6 digit"
                   className="flex-1 rounded-card border border-ink/15 px-3 py-2 text-sm focus:border-ink-light outline-none"
                 />
-                <button
-                  type="submit"
-                  disabled={memproses}
-                  className="rounded-card bg-ink-light px-4 py-2 text-sm font-semibold text-paper hover:bg-ink disabled:opacity-60"
-                >
+                <button type="submit" disabled={memproses} className="rounded-card bg-ink-light px-4 py-2 text-sm font-semibold text-paper hover:bg-ink disabled:opacity-60">
                   Kirim
                 </button>
               </form>
@@ -194,13 +178,9 @@ export default function PresensiPage() {
           </div>
         )}
 
-        {!jadwalSaya && peran === "guru_piket" && (
-          <p className="text-sm text-slate-soft">Anda tidak terjadwal piket hari ini.</p>
-        )}
+        {!jadwalSaya && peran === "guru_piket" && <p className="text-sm text-slate-soft">Anda tidak terjadwal piket hari ini.</p>}
 
-        {pesan && (
-          <p className={`text-sm ${pesan.tipe === "ok" ? "text-ok" : "text-danger"}`}>{pesan.teks}</p>
-        )}
+        {pesan && <p className={`text-sm ${pesan.tipe === "ok" ? "text-ok" : "text-danger"}`}>{pesan.teks}</p>}
 
         <div className="rounded-card border border-ink/8 bg-white p-5">
           <h2 className="font-semibold text-ink">Status petugas hari ini</h2>
@@ -214,17 +194,9 @@ export default function PresensiPage() {
                   <li key={j.id} className="flex items-center justify-between text-sm">
                     <span className="text-ink">{j.profiles?.nama}</span>
                     {p ? (
-                      <span
-                        className={`text-xs font-medium px-2 py-1 rounded-full ${
-                          p.status === "hadir" ? "text-ok bg-ok/10" : "text-gold bg-gold/15"
-                        }`}
-                      >
-                        {p.status === "hadir" ? "Hadir" : "Terlambat"}
-                      </span>
+                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${p.status === "hadir" ? "text-ok bg-ok/10" : "text-gold bg-gold/15"}`}>{p.status === "hadir" ? "Hadir" : "Terlambat"}</span>
                     ) : (
-                      <span className="text-xs font-medium text-slate-soft bg-ink/5 px-2 py-1 rounded-full">
-                        Belum presensi
-                      </span>
+                      <span className="text-xs font-medium text-slate-soft bg-ink/5 px-2 py-1 rounded-full">Belum presensi</span>
                     )}
                   </li>
                 );

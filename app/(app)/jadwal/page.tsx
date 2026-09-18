@@ -45,12 +45,7 @@ export default function JadwalPage() {
     }
 
     const [{ data: jd }, { data: guru }] = await Promise.all([
-      supabase
-        .from("jadwal_piket")
-        .select("id, tanggal, guru_id, ditukar_dengan, keterangan_tukar, profiles(nama)")
-        .gte("tanggal", awal)
-        .lte("tanggal", akhir)
-        .order("tanggal", { ascending: true }),
+      supabase.from("jadwal_piket").select("id, tanggal, guru_id, ditukar_dengan, keterangan_tukar, profiles!guru_id(nama)").gte("tanggal", awal).lte("tanggal", akhir).order("tanggal", { ascending: true }),
       supabase.from("profiles").select("*").eq("peran", "guru_piket").eq("aktif", true).order("nama"),
     ]);
 
@@ -92,10 +87,7 @@ export default function JadwalPage() {
 
   async function handleAjukanTukar(jadwalId: string) {
     if (!tukarDengan) return;
-    const { error } = await supabase
-      .from("jadwal_piket")
-      .update({ ditukar_dengan: tukarDengan, keterangan_tukar: "Disepakati kedua guru" })
-      .eq("id", jadwalId);
+    const { error } = await supabase.from("jadwal_piket").update({ ditukar_dengan: tukarDengan, keterangan_tukar: "Disepakati kedua guru" }).eq("id", jadwalId);
     if (error) {
       setPesan("Gagal mengajukan tukar piket.");
       return;
@@ -109,10 +101,7 @@ export default function JadwalPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Jadwal Piket"
-        description="Tiga guru bertugas per hari, shift 06.30–15.00. Tukar piket cukup kesepakatan dua guru."
-      />
+      <PageHeader title="Jadwal Piket" description="Tiga guru bertugas per hari, shift 06.30–15.00. Tukar piket cukup kesepakatan dua guru." />
 
       <div className="p-6 md:p-10 space-y-6">
         {peran === "admin_tu" && (
@@ -137,27 +126,27 @@ export default function JadwalPage() {
               >
                 <option value="">Pilih guru…</option>
                 {guruList.map((g) => (
-                  <option key={g.id} value={g.id}>{g.nama}</option>
+                  <option key={g.id} value={g.id}>
+                    {g.nama}
+                  </option>
                 ))}
               </select>
             </div>
-            <button className="rounded-card bg-ink-light px-4 py-2 text-sm font-semibold text-paper hover:bg-ink">
-              Tambah ke jadwal
-            </button>
+            <button className="rounded-card bg-ink-light px-4 py-2 text-sm font-semibold text-paper hover:bg-ink">Tambah ke jadwal</button>
           </form>
         )}
 
         {pesan && <p className="text-sm text-danger">{pesan}</p>}
 
         <div className="space-y-4">
-          {perTanggal.length === 0 && (
-            <p className="text-sm text-slate-soft">Belum ada jadwal piket bulan ini.</p>
-          )}
+          {perTanggal.length === 0 && <p className="text-sm text-slate-soft">Belum ada jadwal piket bulan ini.</p>}
           {perTanggal.map(([tanggal, baris]) => (
             <div key={tanggal} className="rounded-card border border-ink/8 bg-white p-5">
               <p className="text-sm font-semibold text-ink">
                 {new Date(tanggal + "T00:00:00").toLocaleDateString("id-ID", {
-                  weekday: "long", day: "numeric", month: "long",
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
                 })}
               </p>
               <ul className="mt-3 grid sm:grid-cols-3 gap-3">
@@ -165,34 +154,26 @@ export default function JadwalPage() {
                   <li key={b.id} className="rounded-card bg-paper border border-ink/8 p-3">
                     <p className="text-sm text-ink font-medium">{b.profiles?.nama}</p>
                     {b.ditukar_dengan ? (
-                      <p className="text-xs text-gold mt-1">
-                        Ditukar dengan {guruList.find((g) => g.id === b.ditukar_dengan)?.nama ?? "guru lain"}
-                      </p>
+                      <p className="text-xs text-gold mt-1">Ditukar dengan {guruList.find((g) => g.id === b.ditukar_dengan)?.nama ?? "guru lain"}</p>
                     ) : b.guru_id === userId ? (
                       tukarUntuk === b.id ? (
                         <div className="mt-2 flex gap-2">
-                          <select
-                            value={tukarDengan}
-                            onChange={(e) => setTukarDengan(e.target.value)}
-                            className="text-xs rounded border border-ink/15 px-1.5 py-1 flex-1"
-                          >
+                          <select value={tukarDengan} onChange={(e) => setTukarDengan(e.target.value)} className="text-xs rounded border border-ink/15 px-1.5 py-1 flex-1">
                             <option value="">Tukar dengan…</option>
-                            {guruList.filter((g) => g.id !== userId).map((g) => (
-                              <option key={g.id} value={g.id}>{g.nama}</option>
-                            ))}
+                            {guruList
+                              .filter((g) => g.id !== userId)
+                              .map((g) => (
+                                <option key={g.id} value={g.id}>
+                                  {g.nama}
+                                </option>
+                              ))}
                           </select>
-                          <button
-                            onClick={() => handleAjukanTukar(b.id)}
-                            className="text-xs font-semibold text-ink-light"
-                          >
+                          <button onClick={() => handleAjukanTukar(b.id)} className="text-xs font-semibold text-ink-light">
                             Simpan
                           </button>
                         </div>
                       ) : (
-                        <button
-                          onClick={() => setTukarUntuk(b.id)}
-                          className="mt-1 text-xs text-ink-light underline underline-offset-2"
-                        >
+                        <button onClick={() => setTukarUntuk(b.id)} className="mt-1 text-xs text-ink-light underline underline-offset-2">
                           Ajukan tukar piket
                         </button>
                       )

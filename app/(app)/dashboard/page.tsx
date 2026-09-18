@@ -11,19 +11,11 @@ export default async function DashboardPage() {
   const supabase = createClient();
   const tanggal = todayISO();
 
-  const [{ data: jadwalHariIni }, { data: presensiHariIni }, { data: jurnalTerbaru }] =
-    await Promise.all([
-      supabase
-        .from("jadwal_piket")
-        .select("id, guru_id, profiles(nama)")
-        .eq("tanggal", tanggal),
-      supabase.from("presensi").select("guru_id, status, jam_submit").eq("tanggal", tanggal),
-      supabase
-        .from("jurnal_kejadian")
-        .select("id, judul, kategori, tanggal, jam_kejadian, profiles(nama)")
-        .order("created_at", { ascending: false })
-        .limit(5),
-    ]);
+  const [{ data: jadwalHariIni }, { data: presensiHariIni }, { data: jurnalTerbaru }] = await Promise.all([
+    supabase.from("jadwal_piket").select("id, guru_id, profiles!guru_id(nama)").eq("tanggal", tanggal),
+    supabase.from("presensi").select("guru_id, status, jam_submit").eq("tanggal", tanggal),
+    supabase.from("jurnal_kejadian").select("id, judul, kategori, tanggal, jam_kejadian, profiles(nama)").order("created_at", { ascending: false }).limit(5),
+  ]);
 
   const presensiByGuru = new Map((presensiHariIni ?? []).map((p) => [p.guru_id, p]));
   const totalPetugas = jadwalHariIni?.length ?? 0;
@@ -31,10 +23,7 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Dashboard"
-        description="Ringkasan piket hari ini di SDN Jatinegara Kaum 07 Pagi."
-      />
+      <PageHeader title="Dashboard" description="Ringkasan piket hari ini di SDN Jatinegara Kaum 07 Pagi." />
 
       <div className="p-6 md:p-10 space-y-8">
         {/* Kartu ringkasan */}
@@ -68,9 +57,7 @@ export default async function DashboardPage() {
           <div className="rounded-card border border-ink/8 bg-white p-5">
             <h2 className="font-semibold text-ink">Petugas piket hari ini</h2>
             {totalPetugas === 0 ? (
-              <p className="mt-3 text-sm text-slate-soft">
-                Belum ada jadwal untuk hari ini. Atur di halaman Jadwal Piket.
-              </p>
+              <p className="mt-3 text-sm text-slate-soft">Belum ada jadwal untuk hari ini. Atur di halaman Jadwal Piket.</p>
             ) : (
               <ul className="mt-4 space-y-3">
                 {(jadwalHariIni ?? []).map((j: any) => {
@@ -79,13 +66,9 @@ export default async function DashboardPage() {
                     <li key={j.id} className="flex items-center justify-between text-sm">
                       <span className="text-ink">{j.profiles?.nama}</span>
                       {hadir ? (
-                        <span className="text-xs font-medium text-ok bg-ok/10 px-2 py-1 rounded-full">
-                          Hadir · {new Date(hadir.jam_submit).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
-                        </span>
+                        <span className="text-xs font-medium text-ok bg-ok/10 px-2 py-1 rounded-full">Hadir · {new Date(hadir.jam_submit).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>
                       ) : (
-                        <span className="text-xs font-medium text-slate-soft bg-ink/5 px-2 py-1 rounded-full">
-                          Belum presensi
-                        </span>
+                        <span className="text-xs font-medium text-slate-soft bg-ink/5 px-2 py-1 rounded-full">Belum presensi</span>
                       )}
                     </li>
                   );
