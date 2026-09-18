@@ -25,6 +25,7 @@ export default function RekapPage() {
   const [tahun, setTahun] = useState(now.getFullYear());
   const [ringkasan, setRingkasan] = useState<RingkasanGuru[]>([]);
   const [jurnalBulanIni, setJurnalBulanIni] = useState<any[]>([]);
+  const [kepalaSekolah, setKepalaSekolah] = useState<{ nama: string; nip: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [membuatPdf, setMembuatPdf] = useState(false);
 
@@ -92,6 +93,16 @@ export default function RekapPage() {
     muatData();
   }, [muatData]);
 
+  useEffect(() => {
+    supabase
+      .from("profiles")
+      .select("nama, nip")
+      .eq("peran", "kepala_sekolah")
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setKepalaSekolah(data ?? null));
+  }, [supabase]);
+
   async function handleExportPdf() {
     setMembuatPdf(true);
     try {
@@ -99,6 +110,7 @@ export default function RekapPage() {
         bulanLabel: `${BULAN[bulan]} ${tahun}`,
         ringkasan,
         jurnal: jurnalBulanIni,
+        kepalaSekolah,
       });
     } finally {
       setMembuatPdf(false);
