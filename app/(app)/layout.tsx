@@ -4,7 +4,11 @@ import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 import MobileTopBar from "@/components/MobileTopBar";
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const supabase = createClient();
   const {
     data: { user },
@@ -12,7 +16,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase.from("profiles").select("nama, peran").eq("id", user.id).single();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("nama, peran")
+    .eq("id", user.id)
+    .single();
 
   const nama = profile?.nama ?? user.email ?? "Pengguna";
   const peran = profile?.peran ?? "guru_piket";

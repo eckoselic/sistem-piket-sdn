@@ -51,6 +51,7 @@ create table presensi (
   jam_submit timestamptz not null default now(),
   status status_presensi not null default 'hadir',
   kode_dipakai text not null,
+  foto_url text,
   unique (jadwal_id)
 );
 
@@ -121,6 +122,25 @@ $$ language plpgsql security definer;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure handle_new_user();
+
+-- =========================================================
+-- STORAGE: bucket untuk foto absen presensi
+-- =========================================================
+insert into storage.buckets (id, name, public)
+values ('foto-presensi', 'foto-presensi', true)
+on conflict (id) do nothing;
+
+create policy "foto_presensi_upload"
+on storage.objects for insert
+with check (bucket_id = 'foto-presensi' and auth.uid() is not null);
+
+create policy "foto_presensi_update"
+on storage.objects for update
+using (bucket_id = 'foto-presensi' and auth.uid() is not null);
+
+create policy "foto_presensi_read"
+on storage.objects for select
+using (bucket_id = 'foto-presensi');
 
 -- =========================================================
 -- CATATAN: generate kode_harian

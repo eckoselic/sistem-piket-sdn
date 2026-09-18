@@ -43,6 +43,7 @@ export interface Presensi {
   jam_submit: string;
   status: StatusPresensi;
   kode_dipakai: string;
+  foto_url: string | null;
   profiles?: Profile;
 }
 
