@@ -4,10 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PageHeader from "@/components/PageHeader";
 import { LABEL_KATEGORI, type KategoriJurnal, type JurnalKejadian } from "@/types/database";
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
+import { todayISO } from "@/lib/tanggal";
 
 const KATEGORI_OPSI: KategoriJurnal[] = ["kesiswaan", "fasilitas", "tamu", "kedisiplinan", "lainnya"];
 

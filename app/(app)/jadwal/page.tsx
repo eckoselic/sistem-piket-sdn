@@ -4,12 +4,11 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PageHeader from "@/components/PageHeader";
 import type { PeranPengguna, Profile } from "@/types/database";
+import { rentangBulan, bulanTahunSekarangWIB } from "@/lib/tanggal";
 
 function bulanBerjalanRange() {
-  const now = new Date();
-  const awal = new Date(now.getFullYear(), now.getMonth(), 1);
-  const akhir = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  return { awal: awal.toISOString().slice(0, 10), akhir: akhir.toISOString().slice(0, 10) };
+  const { tahun, bulan } = bulanTahunSekarangWIB();
+  return rentangBulan(tahun, bulan);
 }
 
 type Baris = {

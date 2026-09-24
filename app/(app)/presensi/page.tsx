@@ -4,10 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PageHeader from "@/components/PageHeader";
 import type { PeranPengguna } from "@/types/database";
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
+import { todayISO } from "@/lib/tanggal";
 
 function generateKode() {
   return Math.floor(100000 + Math.random() * 900000).toString();

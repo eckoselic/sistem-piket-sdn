@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PageHeader from "@/components/PageHeader";
 import { buatPdfRekap } from "@/lib/rekap-pdf";
+import { rentangBulan, bulanTahunSekarangWIB } from "@/lib/tanggal";
 
 const BULAN = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -20,20 +21,16 @@ type RingkasanGuru = {
 
 export default function RekapPage() {
   const supabase = createClient();
-  const now = new Date();
-  const [bulan, setBulan] = useState(now.getMonth());
-  const [tahun, setTahun] = useState(now.getFullYear());
+  const sekarang = bulanTahunSekarangWIB();
+  const [bulan, setBulan] = useState(sekarang.bulan);
+  const [tahun, setTahun] = useState(sekarang.tahun);
   const [ringkasan, setRingkasan] = useState<RingkasanGuru[]>([]);
   const [jurnalBulanIni, setJurnalBulanIni] = useState<any[]>([]);
   const [kepalaSekolah, setKepalaSekolah] = useState<{ nama: string; nip: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [membuatPdf, setMembuatPdf] = useState(false);
 
-  const rentang = useMemo(() => {
-    const awal = new Date(tahun, bulan, 1).toISOString().slice(0, 10);
-    const akhir = new Date(tahun, bulan + 1, 0).toISOString().slice(0, 10);
-    return { awal, akhir };
-  }, [bulan, tahun]);
+  const rentang = useMemo(() => rentangBulan(tahun, bulan), [bulan, tahun]);
 
   const muatData = useCallback(async () => {
     setLoading(true);

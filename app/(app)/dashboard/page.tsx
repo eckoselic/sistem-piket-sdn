@@ -2,10 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import PageHeader from "@/components/PageHeader";
 import { LABEL_KATEGORI } from "@/types/database";
 import Link from "next/link";
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
+import { todayISO } from "@/lib/tanggal";
 
 export default async function DashboardPage() {
   const supabase = createClient();
