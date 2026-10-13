@@ -37,3 +37,18 @@ export function rentangBulan(tahun: number, bulanIndex: number): { awal: string;
   const akhir = `${tahun}-${String(bulanIndex + 1).padStart(2, "0")}-${String(hariDalamBulan).padStart(2, "0")}`;
   return { awal, akhir };
 }
+
+/** Apakah saat ini (WIB) berada dalam jam presensi: pukul 06.00 sampai 15.00. */
+export function dalamJamPresensi(d: Date = new Date()): boolean {
+  const fmt = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Jakarta",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const bagian = fmt.formatToParts(d);
+  const jam = Number(bagian.find((b) => b.type === "hour")?.value ?? 0) % 24;
+  const menit = Number(bagian.find((b) => b.type === "minute")?.value ?? 0);
+  const totalMenit = jam * 60 + menit;
+  return totalMenit >= 6 * 60 && totalMenit <= 15 * 60;
+}

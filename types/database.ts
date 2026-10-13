@@ -1,4 +1,5 @@
 export type PeranPengguna = "guru_piket" | "kepala_sekolah" | "admin_tu";
+// "terlambat" tidak lagi dipakai aplikasi, tetap ada di tipe agar data lama aman dibaca
 export type StatusPresensi = "hadir" | "terlambat" | "tidak_hadir";
 export type KategoriJurnal =
   | "kesiswaan"
@@ -27,14 +28,6 @@ export interface JadwalPiket {
   profiles?: Profile;
 }
 
-export interface KodeHarian {
-  id: string;
-  tanggal: string;
-  kode: string;
-  berlaku_sampai: string;
-  created_at: string;
-}
-
 export interface Presensi {
   id: string;
   jadwal_id: string;
@@ -42,7 +35,7 @@ export interface Presensi {
   tanggal: string;
   jam_submit: string;
   status: StatusPresensi;
-  kode_dipakai: string;
+  kode_dipakai: string | null;
   foto_url: string | null;
   profiles?: Profile;
 }

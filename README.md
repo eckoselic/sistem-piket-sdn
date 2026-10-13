@@ -1,7 +1,7 @@
 # Sistem Manajemen Guru Piket — SDN Jatinegara Kaum 07 Pagi
 
-Aplikasi web untuk mengelola piket harian: presensi guru piket dengan kode
-harian, jadwal piket (3 guru/hari, shift 06.30–15.00), jurnal kejadian, dan
+Aplikasi web untuk mengelola piket harian: presensi guru piket dengan foto,
+jadwal piket (3 guru/hari, shift 06.30–15.00), jurnal kejadian, dan
 rekap bulanan siap cetak (PDF).
 
 **Stack:** Next.js 14 (App Router) + Supabase (Postgres, Auth, RLS) + Vercel.
@@ -68,17 +68,18 @@ Gunakan gambar PNG persegi, idealnya 200×200px, agar tidak gepeng.
 
 ---
 
-## 5. Kode presensi harian
+## 5. Presensi dengan foto
 
-Kode presensi (6 digit) perlu tersedia setiap hari, berlaku sampai jam 15.00.
-Ada dua cara:
+Guru piket melakukan presensi dengan mengirim foto absen (misalnya foto saat
+jaga gerbang), kapan saja antara pukul **06.00 sampai 15.00 WIB**. Tidak ada
+kode presensi dan tidak ada status "terlambat" — setiap presensi yang masuk
+dicatat sebagai hadir.
 
-- **Manual (sudah tersedia):** akun Admin TU membuka halaman **Presensi**,
-  lalu klik "Generate kode" setiap pagi. Kode ditampilkan di layar untuk
-  ditulis ulang di ruang guru (papan tulis/kertas).
-- **Otomatis (opsional, pengembangan lanjutan):** buat Supabase Edge Function
-  terjadwal (cron) jam 06:00 WIB yang menjalankan logika yang sama — lihat
-  catatan di bagian bawah `supabase/schema.sql`.
+Batas jam dijaga di dua tempat: tampilan aplikasi (pesan yang ramah) dan aturan
+database (`presensi_insert_self` di `supabase/schema.sql`).
+
+Untuk project Supabase yang sudah berjalan, jalankan
+`supabase/migrasi-hapus-kode-presensi.sql` di SQL Editor.
 
 ---
 
@@ -88,7 +89,7 @@ Ada dua cara:
 |---|---|
 | **Guru Piket** | Presensi diri sendiri, isi jurnal kejadian, ajukan tukar piket |
 | **Kepala Sekolah** | Melihat dashboard, jadwal, jurnal, dan rekap (read-only) |
-| **Admin TU** | Semua di atas + kelola jadwal piket, generate kode presensi, kelola akun guru |
+| **Admin TU** | Semua di atas + kelola jadwal piket, kelola akun guru |
 
 ---
 

@@ -14,7 +14,6 @@ const BULAN = [
 type RingkasanGuru = {
   nama: string;
   hadir: number;
-  terlambat: number;
   tidakHadir: number;
   jadwalTotal: number;
 };
@@ -59,26 +58,22 @@ export default function RekapPage() {
       const existing = perGuru.get(key) ?? {
         nama: j.profiles?.nama ?? "—",
         hadir: 0,
-        terlambat: 0,
         tidakHadir: 0,
         jadwalTotal: 0,
       };
       existing.jadwalTotal += 1;
       perGuru.set(key, existing);
     }
-    // Hitung hadir/terlambat dari presensi, sisanya dianggap tidak hadir
-    const presensiPerGuru = new Map<string, { hadir: number; terlambat: number }>();
+    // Setiap presensi yang tercatat dihitung hadir (termasuk data lama berstatus
+    // "terlambat"); jadwal tanpa presensi dianggap tidak hadir
+    const presensiPerGuru = new Map<string, number>();
     for (const p of (presensi as any) ?? []) {
-      const c = presensiPerGuru.get(p.guru_id) ?? { hadir: 0, terlambat: 0 };
-      if (p.status === "hadir") c.hadir += 1;
-      if (p.status === "terlambat") c.terlambat += 1;
-      presensiPerGuru.set(p.guru_id, c);
+      presensiPerGuru.set(p.guru_id, (presensiPerGuru.get(p.guru_id) ?? 0) + 1);
     }
     for (const [guruId, ring] of perGuru.entries()) {
-      const p = presensiPerGuru.get(guruId) ?? { hadir: 0, terlambat: 0 };
-      ring.hadir = p.hadir;
-      ring.terlambat = p.terlambat;
-      ring.tidakHadir = Math.max(0, ring.jadwalTotal - p.hadir - p.terlambat);
+      const jumlahHadir = presensiPerGuru.get(guruId) ?? 0;
+      ring.hadir = jumlahHadir;
+      ring.tidakHadir = Math.max(0, ring.jadwalTotal - jumlahHadir);
     }
 
     setRingkasan(Array.from(perGuru.values()).sort((a, b) => a.nama.localeCompare(b.nama)));
@@ -159,22 +154,20 @@ export default function RekapPage() {
                 <th className="px-4 py-3 font-medium">Guru</th>
                 <th className="px-4 py-3 font-medium">Jadwal</th>
                 <th className="px-4 py-3 font-medium text-ok">Hadir</th>
-                <th className="px-4 py-3 font-medium text-gold">Terlambat</th>
                 <th className="px-4 py-3 font-medium text-danger">Tidak hadir</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={5} className="px-4 py-6 text-center text-slate-soft">Memuat…</td></tr>
+                <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-soft">Memuat…</td></tr>
               ) : ringkasan.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-6 text-center text-slate-soft">Tidak ada jadwal pada bulan ini.</td></tr>
+                <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-soft">Tidak ada jadwal pada bulan ini.</td></tr>
               ) : (
                 ringkasan.map((r) => (
                   <tr key={r.nama} className="border-b border-ink/5 last:border-0">
                     <td className="px-4 py-3 text-ink font-medium">{r.nama}</td>
                     <td className="px-4 py-3 text-ink">{r.jadwalTotal}</td>
                     <td className="px-4 py-3 text-ok">{r.hadir}</td>
-                    <td className="px-4 py-3 text-gold">{r.terlambat}</td>
                     <td className="px-4 py-3 text-danger">{r.tidakHadir}</td>
                   </tr>
                 ))

@@ -32,17 +32,7 @@ create table jadwal_piket (
   unique (tanggal, guru_id)
 );
 
--- 4. KODE PRESENSI HARIAN -------------------------------------------------
--- Digenerate otomatis oleh sistem (cron/edge function) tiap jam 06:00
-create table kode_harian (
-  id uuid primary key default gen_random_uuid(),
-  tanggal date not null unique,
-  kode text not null,
-  berlaku_sampai timestamptz not null,
-  created_at timestamptz not null default now()
-);
-
--- 5. PRESENSI GURU PIKET ---------------------------------------------------
+-- 4. PRESENSI GURU PIKET ---------------------------------------------------
 create table presensi (
   id uuid primary key default gen_random_uuid(),
   jadwal_id uuid not null references jadwal_piket(id) on delete cascade,
@@ -50,12 +40,11 @@ create table presensi (
   tanggal date not null,
   jam_submit timestamptz not null default now(),
   status status_presensi not null default 'hadir',
-  kode_dipakai text not null,
   foto_url text,
   unique (jadwal_id)
 );
 
--- 6. JURNAL KEJADIAN --------------------------------------------------------
+-- 5. JURNAL KEJADIAN --------------------------------------------------------
 create table jurnal_kejadian (
   id uuid primary key default gen_random_uuid(),
   tanggal date not null,
@@ -72,7 +61,6 @@ create table jurnal_kejadian (
 -- =========================================================
 alter table profiles enable row level security;
 alter table jadwal_piket enable row level security;
-alter table kode_harian enable row level security;
 alter table presensi enable row level security;
 alter table jurnal_kejadian enable row level security;
 
@@ -95,13 +83,14 @@ create policy "jadwal_tukar_piket" on jadwal_piket for update using (
   guru_id = auth.uid() or peran_saya() = 'admin_tu'
 );
 
--- kode_harian: semua login boleh baca (untuk validasi submit); hanya sistem/admin yang menulis
-create policy "kode_select_all" on kode_harian for select using (auth.uid() is not null);
-create policy "kode_admin_write" on kode_harian for insert with check (peran_saya() = 'admin_tu');
-
--- presensi: guru hanya boleh submit presensi miliknya sendiri; semua login boleh lihat (rekap)
+-- presensi: guru hanya boleh submit presensi miliknya sendiri, hanya pukul 06.00-15.00 WIB;
+-- semua login boleh lihat (rekap)
 create policy "presensi_select_all" on presensi for select using (auth.uid() is not null);
-create policy "presensi_insert_self" on presensi for insert with check (guru_id = auth.uid());
+create policy "presensi_insert_self" on presensi for insert with check (
+  guru_id = auth.uid()
+  and (now() at time zone 'Asia/Jakarta')::time >= time '06:00'
+  and (now() at time zone 'Asia/Jakarta')::time < time '15:01'
+);
 
 -- jurnal_kejadian: guru boleh tulis jurnal atas namanya sendiri; semua login boleh baca
 create policy "jurnal_select_all" on jurnal_kejadian for select using (auth.uid() is not null);
@@ -141,12 +130,3 @@ using (bucket_id = 'foto-presensi' and auth.uid() is not null);
 create policy "foto_presensi_read"
 on storage.objects for select
 using (bucket_id = 'foto-presensi');
-
--- =========================================================
--- CATATAN: generate kode_harian
--- Buat Edge Function terjadwal (Supabase Cron, jam 06:00 WIB) yang:
---   1. Generate kode acak 6 digit
---   2. Insert ke kode_harian dengan tanggal = hari ini,
---      berlaku_sampai = hari ini jam 15:00 WIB
--- Sebagai fallback awal, admin_tu juga bisa generate manual dari halaman Jadwal.
--- =========================================================

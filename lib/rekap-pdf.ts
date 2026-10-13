@@ -24,7 +24,7 @@ export async function buatPdfRekap({
   kepalaSekolah,
 }: {
   bulanLabel: string;
-  ringkasan: { nama: string; hadir: number; terlambat: number; tidakHadir: number; jadwalTotal: number }[];
+  ringkasan: { nama: string; hadir: number; tidakHadir: number; jadwalTotal: number }[];
   jurnal: { tanggal: string; judul: string; kategori: string; isi: string; profiles?: { nama: string } }[];
   kepalaSekolah?: { nama: string; nip: string | null } | null;
 }) {
@@ -75,12 +75,11 @@ export async function buatPdfRekap({
   autoTable(doc, {
     startY: 152,
     margin: { left: marginX, right: marginX },
-    head: [["Nama Guru", "Jadwal", "Hadir", "Terlambat", "Tidak Hadir"]],
+    head: [["Nama Guru", "Jadwal", "Hadir", "Tidak Hadir"]],
     body: ringkasan.map((r) => [
       r.nama,
       String(r.jadwalTotal),
       String(r.hadir),
-      String(r.terlambat),
       String(r.tidakHadir),
     ]),
     headStyles: { fillColor: [18, 36, 61], textColor: 255, fontSize: 9 },
